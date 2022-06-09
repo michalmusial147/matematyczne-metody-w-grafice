@@ -30,34 +30,35 @@
       Your browser does not support the HTML5 canvas element
    </canvas>
    <script>
+      const BLUE = [0, 0, 1, 1,0, 0, 1, 1,0, 0, 1, 1];
+      const ORANGE  = [1,0.5,0,1,1,0.5,0,1,1,0.5,0,1]
+      const LIME  = [0,1,0,1,0,1,0,1,0,1,0,1]
+      addQuarterBase  = (id, scene, rotation, position, pivot) =>  {
+         const customMesh = new BABYLON.Mesh(id, scene);
+         const positions = [
+            0, 0, 0,
+            3, 0, 0,
+            1.5, 1.49, 0,
 
-      addQuarter  = (id, scene, rotation, position, pivot) =>  {
-         var customMesh = new BABYLON.Mesh(id, scene);
-         var positions = [
-         0, 0, 0, 
-         3, 0, 0,
-         1.5, 1.49, 0,
+            3, 0, 0,
+            6, 0, 0,
+            4.5, 1.49, 0,
 
-         3, 0, 0,
-         6, 0, 0,
-         4.5, 1.49, 0,
-         
-         6, 0, 0,
-         9, 0, 0,
-         7.5, 1.49, 0];
+            6, 0, 0,
+            9, 0, 0,
+            7.5, 1.49, 0];
 
-         meshColors = [
-         1, 0, 0.8, 1, 
-         1, 0, 0.8, 1, 
-         1, 0, 0.8, 1, 
-         1, 1, 0, 1,
-         1, 1, 0, 1,
-         1, 1, 0, 1,
-         1, 0, 0, 1,
-         1, 0, 0, 1, 
-         1, 0, 0, 1];
+         const meshColors = [
+            1, 0, 0.8, 1,
+            1, 0, 0.8, 1,
+            1, 0, 0.8, 1,
+            1, 1, 0, 1,
+            1, 1, 0, 1,
+            1, 1, 0, 1,
+            1, 0, 0, 1,
+            1, 0, 0, 1,
+            1, 0, 0, 1];
 
-        
          var indices = [...Array(positions.length/3).keys()];
          var normals = [];
          var vertexData = new BABYLON.VertexData();
@@ -76,41 +77,84 @@
          return customMesh;
       }
 
-      var canvas = document.getElementById("renderCanvas");
-      var engine = new BABYLON.Engine(canvas, true); 
 
-      var axis = new BABYLON.Vector3(0, 0, 1);
+      drawTriangle = (id, scene, rotation, position, pivot, positions, meshColors) => {
+         var customMesh = new BABYLON.Mesh("top" + id, scene);
+
+         var indices = [...Array(positions.length/3).keys()];
+         var normals = [];
+         var vertexData = new BABYLON.VertexData();
+         BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+         vertexData.positions = positions;
+         vertexData.indices = indices;
+         vertexData.normals = normals;
+         vertexData.colors = meshColors;
+         vertexData.applyToMesh(customMesh);
+         var mat = new BABYLON.StandardMaterial("mat", scene);
+         mat.backFaceCulling = false;
+         customMesh.material = mat;
+         customMesh.position = new BABYLON.Vector3(...position);
+         customMesh.rotation = new BABYLON.Vector3(0, 0, rotation);
+         customMesh.setPivotPoint(new BABYLON.Vector3(...pivot));
+         return customMesh;
+      }
+      addQuarterTop  = (id, scene, rotation, position, pivot, sphere) =>  {
+         var positions1 = [
+            1.5, 0, 0,
+            4.5, 0, 0,
+            3, 1.49, 0];
+         var positions2 = [
+            4.5, 0, 0,
+            7.5, 0, 0,
+            6, 1.49, 0];
+         var positions3 = [
+            3, 1.49, 0,
+            6, 1.49, 0,
+            4.5,2.98, 0];
+         var meshColors1 = [...ORANGE];
+         var meshColors2 = [...LIME];
+         var meshColors3 = [...BLUE];
+         var customMesh =  drawTriangle(id+"1", scene, rotation, position, pivot, positions1, meshColors1)
+         customMesh.parent=sphere;
+         var customMesh2 =  drawTriangle(id+"2", scene, rotation, position, pivot, positions2, meshColors2)
+         customMesh2.parent=sphere;
+         var customMesh3 =  drawTriangle(id+"3", scene, rotation, position, pivot, positions3, meshColors3)
+         customMesh3.parent=sphere;
+         return customMesh;
+      }
+
+
+      const canvas = document.getElementById("renderCanvas");
+      const engine = new BABYLON.Engine(canvas, true);
+
+      const axis = new BABYLON.Vector3(0, 0, 1);
 
       var createScene = function () {
-         var scene = new BABYLON.Scene(engine);
-         var light = new BABYLON.DirectionalLight("direct", new BABYLON.Vector3(1, -5, 10), scene);
-         var camera = new BABYLON.ArcRotateCamera("camera1",  0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
-
+         const scene = new BABYLON.Scene(engine);
+         const light = new BABYLON.DirectionalLight("direct", new BABYLON.Vector3(1, -5, 10), scene);
+         const camera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
+         const angle = 0.02;
          var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:0.25}, scene);
-         sphere.position  =new BABYLON.Vector3(0, 0, 0);
-
-
+         sphere.position  = new BABYLON.Vector3(0, 0, 0);
          camera.setPosition(new BABYLON.Vector3(0, 5, -30));
          camera.attachControl(canvas, true);
-         
-         var mesh1 = addQuarter("1", scene, 0,  [-4.5, -5, 0], [0, 0, 0]);
+         var mesh1 = addQuarterBase("1", scene, 0,  [-4.5, -4.47, 0], [0, 0, 0]);
          mesh1.parent = sphere;
-         addQuarter("2", scene, Math.PI/2, [9, 0, 0], [0, 0, 0]);
-         // addQuarter("3", scene, 180);
-         // addQuarter("4", scene, 270);
-         const axes = new BABYLON.AxesViewer(scene, 4);
-         var a = 0; // for oscillation
-         var angle=0.025;
-         var axisNormal = axis.normalize();
-         var sign;
-         // scene.registerAfterRender(function() {
-         //    a +=0.005;
-         //    var sign = Math.cos(a)/Math.abs(Math.cos(a));
-         //    mesh1.rotate(axisNormal, angle, BABYLON.Space.WORLD);
-         //    // mesh1.position = mesh1.position.add(axisNormal.scale(0.01 * sign)); //move pilot along axis
-         // });
+         var mesh2 = addQuarterBase("2", scene, Math.PI/2, [4.5, -4.47, 0], [0, 0, 0]);
+         mesh2.parent = sphere;
+         var mesh3 = addQuarterBase("3", scene, Math.PI ,  [4.5, 4.47, 0], [0, 0, 0]);
+         mesh3.parent = sphere;
+         var mesh4 = addQuarterBase("4", scene, Math.PI +Math.PI/2 , [-4.5, +4.47, 0], [0, 0, 0]);
+         mesh4.parent = sphere;
 
-         var angle = 0.02;
+         var mesh11 = addQuarterTop("22", scene, 0,  [-4.5, -2.98, 0], [0, 0, 0], sphere);
+
+         var mesh11 = addQuarterTop("11", scene, Math.PI/2,  [3, -4.47, 0], [0, 0, 0], sphere);
+
+         var mesh11 = addQuarterTop("11", scene, Math.PI/2,  [3, -4.47, 0], [0, 0, 0], sphere);
+
+         new BABYLON.AxesViewer(scene, 4);
+
          scene.registerAfterRender(function () {
             // sphere.rotate(axis, angle, BABYLON.Space.WORLD);
          });
