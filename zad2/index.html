@@ -128,12 +128,14 @@
       const engine = new BABYLON.Engine(canvas, true);
 
       const axis = new BABYLON.Vector3(0, 0, 1);
-
+      const axis_inside = new BABYLON.Vector3(0, 0, -0.1);
+      const angle = 0.02;
+      const angle_small = angle / 3;
       var createScene = function () {
          const scene = new BABYLON.Scene(engine);
          const light = new BABYLON.DirectionalLight("direct", new BABYLON.Vector3(1, -5, 10), scene);
          const camera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
-         const angle = 0.02;
+
          var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:0.25}, scene);
          sphere.position  = new BABYLON.Vector3(0, 0, 0);
          camera.setPosition(new BABYLON.Vector3(0, 5, -30));
@@ -144,28 +146,33 @@
          mesh2.parent = sphere;
          var mesh3 = addQuarterBase("3", scene, Math.PI ,  [4.5, 4.47, 0], [0, 0, 0]);
          mesh3.parent = sphere;
-         var mesh4 = addQuarterBase("4", scene, Math.PI +Math.PI/2 , [-4.5, +4.47, 0], [0, 0, 0]);
+         var mesh4 = addQuarterBase("4", scene, Math.PI + Math.PI/2 , [-4.5, +4.47, 0], [0, 0, 0]);
          mesh4.parent = sphere;
 
-         var mesh11 = addQuarterTop("22", scene, 0,  [-4.5, -2.98, 0], [0, 0, 0], sphere);
-
-         var mesh11 = addQuarterTop("11", scene, Math.PI/2,  [3, -4.47, 0], [0, 0, 0], sphere);
-
-         var mesh11 = addQuarterTop("11", scene, Math.PI/2,  [3, -4.47, 0], [0, 0, 0], sphere);
+         var mesh11 = addQuarterTop("11", scene, 0,  [-4.5, -2.98, 0], [0, 0, 0], sphere);
+         var mesh12 = addQuarterTop("22", scene, Math.PI/2,  [3, -4.47, 0], [0, 0, 0], sphere);
+         var mesh13 = addQuarterTop("33", scene, Math.PI,  [4.5, 3.06, 0], [0, 0, 0], sphere);
+         var mesh14 = addQuarterTop("33", scene, Math.PI + Math.PI/2,  [-3, +4.47, 0], [0, 0, 0], sphere);
 
          new BABYLON.AxesViewer(scene, 4);
 
          scene.registerAfterRender(function () {
-            // sphere.rotate(axis, angle, BABYLON.Space.WORLD);
+            sphere.rotate(axis, angle, BABYLON.Space.WORLD);
+            let meshes = scene.meshes;
+            console.log(meshes.length);
+            let meshes_filtered =  meshes.filter(mesh => mesh.id.includes("top"));
+            console.log(meshes_filtered.length);
+            meshes_filtered.forEach(mesh => {
+               mesh.rotate(BABYLON.Axis.Z, angle_small, BABYLON.Space.LOCAL);
+            });
          });
 
          return scene;
       };
-      /******* End of the create scene function ******/
       var scene = createScene();
      
       engine.runRenderLoop(function () {
-         let mesh1 = scene.getMeshByName("1");
+
          scene.render();
       });
       // Watch for browser/canvas resize events
