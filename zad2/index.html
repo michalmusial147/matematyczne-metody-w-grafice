@@ -37,9 +37,11 @@
          0, 0, 0, 
          3, 0, 0,
          1.5, 1.49, 0,
+
          3, 0, 0,
          6, 0, 0,
          4.5, 1.49, 0,
+         
          6, 0, 0,
          9, 0, 0,
          7.5, 1.49, 0];
@@ -54,7 +56,8 @@
          1, 0, 0, 1,
          1, 0, 0, 1, 
          1, 0, 0, 1];
-          
+
+        
          var indices = [...Array(positions.length/3).keys()];
          var normals = [];
          var vertexData = new BABYLON.VertexData();
@@ -70,36 +73,55 @@
          customMesh.position = new BABYLON.Vector3(...position);
          customMesh.rotation = new BABYLON.Vector3(0, 0, rotation);
          customMesh.setPivotPoint(new BABYLON.Vector3(...pivot));
+         return customMesh;
       }
 
       var canvas = document.getElementById("renderCanvas");
       var engine = new BABYLON.Engine(canvas, true); 
+
+      var axis = new BABYLON.Vector3(0, 0, 1);
+
       var createScene = function () {
          var scene = new BABYLON.Scene(engine);
          var light = new BABYLON.DirectionalLight("direct", new BABYLON.Vector3(1, -5, 10), scene);
          var camera = new BABYLON.ArcRotateCamera("camera1",  0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
+
+         var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:0.25}, scene);
+         sphere.position  =new BABYLON.Vector3(0, 0, 0);
+
+
          camera.setPosition(new BABYLON.Vector3(0, 5, -30));
          camera.attachControl(canvas, true);
          
-         addQuarter("1", scene, 0, [0, 0, 0], [4.5, 4.5, 0]);
-         addQuarter("2", scene, Math.PI/2, [9, 0, 0], [4.5-9, 4.5, 0]);
+         var mesh1 = addQuarter("1", scene, 0,  [-4.5, -5, 0], [0, 0, 0]);
+         mesh1.parent = sphere;
+         addQuarter("2", scene, Math.PI/2, [9, 0, 0], [0, 0, 0]);
          // addQuarter("3", scene, 180);
          // addQuarter("4", scene, 270);
-
-
          const axes = new BABYLON.AxesViewer(scene, 4);
+         var a = 0; // for oscillation
+         var angle=0.025;
+         var axisNormal = axis.normalize();
+         var sign;
+         // scene.registerAfterRender(function() {
+         //    a +=0.005;
+         //    var sign = Math.cos(a)/Math.abs(Math.cos(a));
+         //    mesh1.rotate(axisNormal, angle, BABYLON.Space.WORLD);
+         //    // mesh1.position = mesh1.position.add(axisNormal.scale(0.01 * sign)); //move pilot along axis
+         // });
+
+         var angle = 0.02;
+         scene.registerAfterRender(function () {
+            // sphere.rotate(axis, angle, BABYLON.Space.WORLD);
+         });
+
          return scene;
       };
       /******* End of the create scene function ******/
-      var scene = createScene(); //Call the createScene function
-      // Register a render loop to repeatedly render the scene
+      var scene = createScene();
+     
       engine.runRenderLoop(function () {
          let mesh1 = scene.getMeshByName("1");
-         let mesh2 = scene.getMeshByName("2");
-         // mesh1.addRotation(0, 0, 0.01, 1);
-         // mesh2.addRotation(0, 0, 0.01, 1);
-         // glRotated(1, 0 , 0 , 1);
-         // BABYLON.glRotate();
          scene.render();
       });
       // Watch for browser/canvas resize events
