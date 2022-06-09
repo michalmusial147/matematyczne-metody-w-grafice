@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   <title>Babylon Template</title>
+   <style>
+      html,
+      body {
+         overflow: hidden;
+         width: 100%;
+         height: 100%;
+         margin: 0;
+         padding: 0;
+      }
+
+      #renderCanvas {
+         width: 100%;
+         height: 100%;
+         touch-action: none;
+      }
+   </style>
+   <script src="https://cdn.babylonjs.com/babylon.js"></script>
+   <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+   <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+</head>
+
+<body>
+   <canvas id="renderCanvas" touch-action="none">
+      Your browser does not support the HTML5 canvas element
+   </canvas>
+   <script>
+
+      addQuarter  = (id, scene, rotation, position, pivot) =>  {
+         var customMesh = new BABYLON.Mesh(id, scene);
+         var positions = [
+         0, 0, 0, 
+         3, 0, 0,
+         1.5, 1.49, 0,
+         3, 0, 0,
+         6, 0, 0,
+         4.5, 1.49, 0,
+         6, 0, 0,
+         9, 0, 0,
+         7.5, 1.49, 0];
+
+         meshColors = [
+         1, 0, 0.8, 1, 
+         1, 0, 0.8, 1, 
+         1, 0, 0.8, 1, 
+         1, 1, 0, 1,
+         1, 1, 0, 1,
+         1, 1, 0, 1,
+         1, 0, 0, 1,
+         1, 0, 0, 1, 
+         1, 0, 0, 1];
+          
+         var indices = [...Array(positions.length/3).keys()];
+         var normals = [];
+         var vertexData = new BABYLON.VertexData();
+         BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+         vertexData.positions = positions;
+         vertexData.indices = indices;
+         vertexData.normals = normals;
+         vertexData.colors = meshColors;
+         vertexData.applyToMesh(customMesh);
+         var mat = new BABYLON.StandardMaterial("mat", scene);
+         mat.backFaceCulling = false;
+         customMesh.material = mat;
+         customMesh.position = new BABYLON.Vector3(...position);
+         customMesh.rotation = new BABYLON.Vector3(0, 0, rotation);
+         customMesh.setPivotPoint(new BABYLON.Vector3(...pivot));
+      }
+
+      var canvas = document.getElementById("renderCanvas");
+      var engine = new BABYLON.Engine(canvas, true); 
+      var createScene = function () {
+         var scene = new BABYLON.Scene(engine);
+         var light = new BABYLON.DirectionalLight("direct", new BABYLON.Vector3(1, -5, 10), scene);
+         var camera = new BABYLON.ArcRotateCamera("camera1",  0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
+         camera.setPosition(new BABYLON.Vector3(0, 5, -30));
+         camera.attachControl(canvas, true);
+         
+         addQuarter("1", scene, 0, [0, 0, 0], [4.5, 4.5, 0]);
+         addQuarter("2", scene, Math.PI/2, [9, 0, 0], [4.5-9, 4.5, 0]);
+         // addQuarter("3", scene, 180);
+         // addQuarter("4", scene, 270);
+
+
+         const axes = new BABYLON.AxesViewer(scene, 4);
+         return scene;
+      };
+      /******* End of the create scene function ******/
+      var scene = createScene(); //Call the createScene function
+      // Register a render loop to repeatedly render the scene
+      engine.runRenderLoop(function () {
+         let mesh1 = scene.getMeshByName("1");
+         let mesh2 = scene.getMeshByName("2");
+         // mesh1.addRotation(0, 0, 0.01, 1);
+         // mesh2.addRotation(0, 0, 0.01, 1);
+         // glRotated(1, 0 , 0 , 1);
+         // BABYLON.glRotate();
+         scene.render();
+      });
+      // Watch for browser/canvas resize events
+      window.addEventListener("resize", function () {
+         engine.resize();
+      });
+   </script>
+</body>
+
+</html>
